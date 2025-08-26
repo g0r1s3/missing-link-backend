@@ -1,14 +1,27 @@
+# app/main.py
 from fastapi import FastAPI
-from app.api import items
+from fastapi.middleware.cors import CORSMiddleware
+from app.api.v1.routers import items
 
 app = FastAPI(
     title="Missing Link API",
-    description="Das Backend für meine React-App",
-    version="0.1.0",
+    description="Mein FastAPI-Backend (In-Memory CRUD als Start)",
+    version="0.2.0",
 )
 
-app.include_router(items.router)
+# React-Dev-Server zulassen
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.get("/hello")
-def hello():
-    return {"msg": "Hello, FastAPI 👋"}
+# Routen registrieren
+app.include_router(items.router, prefix="/api/v1")
+
+# Health-Check
+@app.get("/healthz")
+def health():
+    return {"ok": True}
