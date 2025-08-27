@@ -1,42 +1,50 @@
-# app/services/items.py
-from typing import Dict, List, Optional
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from app.models.item import Item
 from app.schemas.item import ItemCreate, ItemRead
 
-# In-Memory-"Datenbank"
-_DB: Dict[int, ItemRead] = {}
-_counter = 0
-
-def _next_id() -> int:
-    global _counter
-    _counter += 1
-    return _counter
-
-def list_items(q: Optional[str] = None, limit: int = 20, offset: int = 0) -> List[ItemRead]:
-    """Items mit optionalem Filter (name enthält q), plus Pagination."""
-    items = list(_DB.values())
+async def list_items(session: AsyncSession, q: str | None = None, limit: int = 20, offset: int = 0) -> list[ItemRead]:
+    stmt = select(Item)
     if q:
-        q_lower = q.lower()
-        items = [i for i in items if q_lower in i.name.lower()]
-    return items[offset: offset + limit]
+        stmt = stmt.where(Item.name.ilike(f"%{q}%"))
+    stmt = stmt.offset(offset).limit(limit)
+    result = await session.execute(stmt)
+    items = result.scalars().all()
+    return [ItemRead.model_validate(i.__dict__) for i in items]
 
-def create_item(payload: ItemCreate) -> ItemRead:
-    """Neues Item anlegen und speichern."""
-    new = ItemRead(id=_next_id(), **payload.model_dump())
-    _DB[new.id] = new
-    return new
+async def create_item(session: AsyncSession, payload: ItemCreate) -> ItemRead:
+    new_item = Item(name=payload.name, description=payload.description)
+    session.add(new_item)
+    await session.commit()
+    await session.refresh(new_item)
+    return ItemRead.model_validate(new_item.__dict__)
 
-def get_item(item_id: int) -> Optional[ItemRead]:
-    """Ein Item lesen (oder None)."""
-    return _DB.get(item_id)
+async def get_item(session: AsyncSession, item_id: int) -> ItemRead | None:
+    stmt = select(Item).where(Item.id == item_id)
+    result = await session.execute(stmt)
+    item = result.scalar_one_or_none()
+    if item:
+        return ItemRead.model_validate(item.__dict__)
+    return None
 
-def update_item(item_id: int, payload: ItemCreate) -> Optional[ItemRead]:
-    """Item updaten; None, wenn es nicht existiert."""
-    if item_id not in _DB:
+async def update_item(session: AsyncSession, item_id: int, payload: ItemCreate) -> ItemRead | None:
+    stmt = select(Item).where(Item.id == item_id)
+    result = await session.execute(stmt)
+    item = result.scalar_one_or_none()
+    if not item:
         return None
-    updated = ItemRead(id=item_id, **payload.model_dump())
-    _DB[item_id] = updated
-    return updated
+    item.name = payload.name
+    item.description = payload.description
+    await session.commit()
+    await session.refresh(item)
+    return ItemRead.model_validate(item.__dict__)
 
-def delete_item(item_id: int) -> bool:
-    """Item löschen; True bei Erfolg, False wenn nicht vorhanden."""
-    return _DB.pop(item_id, None) is not None
+async def delete_item(session: AsyncSession, item_id: int) -> bool:
+    stmt = select(Item).where(Item.id == item_id)
+    result = await session.execute(stmt)
+    item = result.scalar_one_or_none()
+    if not item:
+        return False
+    await session.delete(item)
+    await session.commit()
+    return True
