@@ -2,14 +2,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.routers import items
+from app.api.v1.routers import auth  # <<< NEU/prüfen
 
 app = FastAPI(
     title="Missing Link API",
-    description="Mein FastAPI-Backend (In-Memory CRUD als Start)",
-    version="0.2.0",
+    description="Mein FastAPI-Backend (Auth + Items)",
+    version="0.3.0",
 )
 
-# React-Dev-Server zulassen
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://localhost:3000"],
@@ -18,10 +18,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routen registrieren
+# Unbedingt BEIDE Router registrieren:
+app.include_router(auth.router, prefix="/api/v1")   # <<< wichtig
 app.include_router(items.router, prefix="/api/v1")
-
-# Health-Check
-@app.get("/healthz")
-def health():
-    return {"ok": True}

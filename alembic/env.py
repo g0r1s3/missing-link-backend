@@ -4,36 +4,31 @@ import asyncio
 import os
 import sys
 
+from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-from alembic import context
 
-# --- Pfad so setzen, dass 'app' importierbar ist ---
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
-# --- App-Imports ---
-from app.core.config import settings
-from app.db.base import Base  # enthält alle Modelle (Item)
-
-# Alembic Config-Objekt
+# 1) Alembic-Config & Logging
 config = context.config
-
-# Logging-Konfig übernehmen
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Ziel-Metadaten (für Autogenerate)
+# 2) Projektpfad hinzufügen (…/alembic -> …/)
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+# 3) App-Imports (in richtiger Reihenfolge!)
+from app.core.config import settings
+from app.db.base import Base               # definiert Declarative Base
+import app.models                          # lädt alle Modelle (Item, User, …)
+
+# 4) Ziel-Metadaten (Autogenerate nutzt das)
 target_metadata = Base.metadata
 
 def run_migrations_offline():
     """Offline-Modus: reine SQL-Ausgabe."""
     url = settings.DATABASE_URL
-    context.configure(
-        url=url,
-        target_metadata=target_metadata,
-        literal_binds=True,
-    )
+    context.configure(url=url, target_metadata=target_metadata, literal_binds=True)
     with context.begin_transaction():
         context.run_migrations()
 
