@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.auth import get_current_user  # neu
+from app.models.user import User            # neu
 
 from app.schemas.item import ItemCreate, ItemRead
 from app.services import items as service
@@ -29,7 +31,7 @@ async def get_item(item_id: int, session: AsyncSession = Depends(get_session)):
 async def create_item(
     payload: ItemCreate,
     session: AsyncSession = Depends(get_session),
-    user=Depends(get_current_user),  # geschützt
+    current_user: User = Depends(get_current_user),   # geschützt
 ):
     return await service.create_item(session, payload)
 
@@ -38,7 +40,7 @@ async def update_item(
     item_id: int,
     payload: ItemCreate,
     session: AsyncSession = Depends(get_session),
-    user=Depends(get_current_user),  # geschützt
+    current_user: User = Depends(get_current_user),   # geschützt
 ):
     updated = await service.update_item(session, item_id, payload)
     if not updated:
@@ -49,7 +51,7 @@ async def update_item(
 async def delete_item(
     item_id: int,
     session: AsyncSession = Depends(get_session),
-    user=Depends(get_current_user),  # geschützt
+    current_user: User = Depends(get_current_user),   # geschützt
 ):
     deleted = await service.delete_item(session, item_id)
     if not deleted:
