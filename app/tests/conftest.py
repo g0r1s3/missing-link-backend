@@ -33,6 +33,8 @@ async def _truncate_all():
         # Reihenfolge ist egal dank CASCADE; ergänze weitere Tabellen hier
         await conn.execute(text("TRUNCATE TABLE items RESTART IDENTITY CASCADE;"))
         await conn.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE;"))
+        await conn.execute(text("TRUNCATE TABLE bikes RESTART IDENTITY CASCADE;"))
+
 
 @pytest.fixture(autouse=True)
 def _clean_db():
@@ -64,3 +66,5 @@ async def db_session():
 @pytest.fixture
 def anyio_backend():
     return "asyncio"
+
+

@@ -8,12 +8,17 @@ from app.db.session import get_session
 from app.services import users as users_service
 from app.models.user import User
 
-bearer_scheme = HTTPBearer(auto_error=True)
+# WICHTIG: auto_error=False, damit wir selbst 401 zurückgeben können
+bearer_scheme = HTTPBearer(auto_error=False)
 
 async def get_current_user(
     creds: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     session: AsyncSession = Depends(get_session),
 ) -> User:
+    # Kein/leerere Header -> 401
+    if creds is None or not getattr(creds, "credentials", None):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
     token = creds.credentials
     try:
         payload = decode_token(token)
@@ -29,4 +34,3 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail="User not found")
 
     return user
-
