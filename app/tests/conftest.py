@@ -34,6 +34,7 @@ async def _truncate_all():
         await conn.execute(text("TRUNCATE TABLE items RESTART IDENTITY CASCADE;"))
         await conn.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE;"))
         await conn.execute(text("TRUNCATE TABLE bikes RESTART IDENTITY CASCADE;"))
+        await conn.execute(text("TRUNCATE TABLE maintenances RESTART IDENTITY CASCADE;"))
 
 
 @pytest.fixture(autouse=True)
