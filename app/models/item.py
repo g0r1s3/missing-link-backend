@@ -1,7 +1,9 @@
 # app/models/item.py
-from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
+
 from app.db.base import Base
+
 
 class Item(Base):
     __tablename__ = "items"

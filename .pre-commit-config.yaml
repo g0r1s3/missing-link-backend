@@ -1,0 +1,53 @@
+repos:
+  # Schnelle Qualitätschecks für alle Dateien
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  # Ruff: Lint + (bei Bedarf) Fixes
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix]          # kleine Fixes automatisch (Import-Order, etc.)
+      - id: ruff-format        # Formatter-Check; wir verwenden weiterhin Black
+
+  # Black: Meinungsvoller Formatter
+  - repo: https://github.com/psf/black
+    rev: 24.8.0
+    hooks:
+      - id: black
+
+  # mypy: statische Typprüfung
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - sqlalchemy>=2
+          - pydantic>=2
+          - types-requests
+          - types-python-dateutil
+          - types-PyYAML
+
+  # (Optional) Pyproject-Formatierung
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: v2.6.0
+    hooks:
+      - id: pyproject-fmt
+
+  - repo: local
+    hooks:
+      - id: pytest-on-push
+        name: Run pytest (quick) on push
+        entry: bash -c 'pytest -q'
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+
+# Ein lokaler Hook für Tests beim Push – analog zu deinem Frontend-Pre-Push
+# Falls du das nicht willst: diesen Block weglassen.
+default_stages: [pre-commit]

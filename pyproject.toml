@@ -1,0 +1,61 @@
+[tool.black]
+line-length = 100
+target-version = [ "py312" ]
+
+[tool.ruff]
+# Basis
+target-version = "py312"
+line-length = 100
+src = [ "alembic", "app" ]
+exclude = [
+  "alembic/versions/*", # Migrations werden oft “frei” gelassen
+]
+
+# Linting-Auswahl (Ruff ersetzt flake8 + isort u.a.)
+lint.select = [
+  "B",   # bugbear
+  "C4",  # comprehensions
+  "E",   # pycodestyle
+  "F",   # pyflakes
+  "I",   # isort (Import-Order)
+  "N",   # pep8-naming
+  "RUF", # ruff-spezifisch
+  "SIM", # simplify
+  "UP",  # pyupgrade
+]
+
+# Black übernimmt die Zeilenlänge -> E501 nicht doppelt meckern
+lint.ignore = [ "E501" ]
+
+lint.per-file-ignores."alembic/env.py" = [ "E402" ]
+
+# Dateispezifische Ausnahmen:
+# - FastAPI: Depends(...) als Default ist idiomatisch -> B008 ignorieren
+# - Alembic env.py: spätes Importieren -> E402 ignorieren
+lint.per-file-ignores."app/api/**/*.py" = [ "B008" ]
+lint.per-file-ignores."app/core/auth.py" = [ "B008" ]
+lint.isort.combine-as-imports = true
+# Isort-Feinheiten (erkennt deine internen Imports sauber)
+lint.isort.known-first-party = [ "app" ]
+lint.isort.split-on-trailing-comma = true
+
+[tool.mypy]
+python_version = "3.12"
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_no_return = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+pretty = true
+
+# Tests und Alembic-Migrations zunächst ausklammern
+exclude = "(alembic/versions/|^tests/)"
+
+# Besseres SQLAlchemy-Typing
+plugins = [ "sqlalchemy.ext.mypy.plugin" ]
+
+# Wenn jemand bewusst mypy auf alles loslässt, bleiben Alembic-Sachen ruhig.
+# (Die Hook-Konfiguration ruft mypy ohnehin nur für `app/` auf.)
+[[tool.mypy.overrides]]
+module = [ "alembic.*" ]
+ignore_errors = true

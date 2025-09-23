@@ -1,10 +1,10 @@
 # alembic/env.py
-from logging.config import fileConfig
 import asyncio
 import os
 import sys
+from logging.config import fileConfig
 
-from alembic import context
+from alembic import context  # type: ignore[attr-defined]
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
@@ -19,25 +19,34 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 # 3) App-Imports (in richtiger Reihenfolge!)
 from app.core.config import settings
-from app.db.base import Base               # definiert Declarative Base
-import app.models                          # lädt alle Modelle (Item, User, …)
+from app.db.base import Base  # definiert Declarative Base
 
 # 4) Ziel-Metadaten (Autogenerate nutzt das)
 target_metadata = Base.metadata
 
-def run_migrations_offline():
+
+def run_migrations_offline() -> None:
     """Offline-Modus: reine SQL-Ausgabe."""
-    url = settings.DATABASE_URL
-    context.configure(url=url, target_metadata=target_metadata, literal_binds=True)
+    url: str = settings.DATABASE_URL
+    context.configure(
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+    )
     with context.begin_transaction():
         context.run_migrations()
 
-def do_run_migrations(connection: Connection):
-    context.configure(connection=connection, target_metadata=target_metadata)
+
+def do_run_migrations(connection: Connection) -> None:
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+    )
     with context.begin_transaction():
         context.run_migrations()
 
-async def run_migrations_online():
+
+async def run_migrations_online() -> None:
     """Online-Modus: echte DB-Verbindung (async)."""
     connectable = async_engine_from_config(
         {"sqlalchemy.url": settings.DATABASE_URL},
@@ -47,6 +56,7 @@ async def run_migrations_online():
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
     await connectable.dispose()
+
 
 if context.is_offline_mode():
     run_migrations_offline()

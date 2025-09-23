@@ -1,5 +1,9 @@
 # app/services/__init__.py
-from . import items  # falls vorhanden
-from . import users  # falls vorhanden
-from . import bikes  # <-- neu
-from . import maintenances
+from . import (
+    bikes,
+    items,
+    maintenances,
+    users,
+)
+
+__all__ = ["bikes", "items", "maintenances", "users"]
