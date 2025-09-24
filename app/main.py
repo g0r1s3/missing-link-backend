@@ -7,6 +7,7 @@ from app.api.v1.routers import (
     auth,  # <<< NEU/
     bikes as bikes_router,  # neu
     items,
+    system,
 )
 
 app = FastAPI(
@@ -29,3 +30,5 @@ app.include_router(items.router, prefix="/api/v1")
 app.include_router(bikes_router.router, prefix="/api/v1")  # neu
 
 app.include_router(maint_router.router, prefix="/api/v1")  # <-- neu
+
+app.include_router(system.router, prefix="/api/v1")
