@@ -1,5 +1,5 @@
 repos:
-  # Schnelle Qualitätschecks für alle Dateien
+  # Schnelle Qualitätschecks für alle Dateien (nur manuell)
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
@@ -7,21 +7,21 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
 
-  # Ruff: Lint + (bei Bedarf) Fixes
+  # Ruff: Lint + (bei Bedarf) Fixes (nur manuell)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.6.9
     hooks:
       - id: ruff
-        args: [--fix]          # kleine Fixes automatisch (Import-Order, etc.)
-      - id: ruff-format        # Formatter-Check; wir verwenden weiterhin Black
+        args: [--fix]
+      - id: ruff-format
 
-  # Black: Meinungsvoller Formatter
+  # Black: Formatter (nur manuell)
   - repo: https://github.com/psf/black
     rev: 24.8.0
     hooks:
       - id: black
 
-  # mypy: statische Typprüfung
+  # mypy: statische Typprüfung (nur manuell)
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.11.2
     hooks:
@@ -33,21 +33,21 @@ repos:
           - types-python-dateutil
           - types-PyYAML
 
-  # (Optional) Pyproject-Formatierung
+  # (Optional) Pyproject-Formatierung (nur manuell)
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: v2.6.0
     hooks:
       - id: pyproject-fmt
 
+  # (Optional) Lokaler Pytest-Hook – jetzt ebenfalls nur manuell
   - repo: local
     hooks:
       - id: pytest-on-push
-        name: Run pytest (quick) on push
+        name: Run pytest (manual)
         entry: bash -c 'pytest -q'
         language: system
         pass_filenames: false
-        stages: [pre-push]
+        # keine stages -> greift nur bei manueller Ausführung
 
-# Ein lokaler Hook für Tests beim Push – analog zu deinem Frontend-Pre-Push
-# Falls du das nicht willst: diesen Block weglassen.
-# default_stages: [pre-commit]
+# WICHTIG: Standard-Stage ist jetzt 'manual' – es läuft nichts automatisch bei commit/push.
+default_stages: [manual]
