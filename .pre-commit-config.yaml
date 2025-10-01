@@ -50,4 +50,4 @@ repos:
 
 # Ein lokaler Hook für Tests beim Push – analog zu deinem Frontend-Pre-Push
 # Falls du das nicht willst: diesen Block weglassen.
-default_stages: [pre-commit]
+# default_stages: [pre-commit]
